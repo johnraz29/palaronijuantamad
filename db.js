@@ -1,9 +1,9 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 const bcrypt = require('bcrypt');
 
 const dbFile = path.join(__dirname, 'data.sqlite');
-const db = new sqlite3.Database(dbFile);
+const db = new Database('data.sqlite');
 
 function initDb() {
   db.serialize(() => {
