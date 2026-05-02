@@ -1,6 +1,8 @@
 // ==========================================
 // 1. ALL CONSTANTS & DEPENDENCIES
 // ==========================================
+
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -19,7 +21,7 @@ const PORT = process.env.PORT || 3004;
 const AGENT_COMMISSION_RATE = 0.03;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 // Admin & API Configs
-require('dotenv').config();
+
 
 const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
@@ -948,6 +950,6 @@ app.post('/admin/jackpot/update', (req, res) => {
 // ==========================================
 // 13. SERVER START
 // ==========================================
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-console.log("🚀 BASE_URL:", BASE_URL);
-console.log("🚀 SERVER STARTED ON PORT:", PORT);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on ${PORT}`);
+});
