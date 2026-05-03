@@ -3,11 +3,9 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 
 const dbFile = path.join(__dirname, 'data.sqlite');
-const db = new Database(dbFile); // Inayos din natin ito para gamitin ang dbFile path
+const db = new Database(dbFile);
 
 function initDb() {
-    // Alisin ang db.serialize, diretso na ang mga commands
-    
     // 1. USERS TABLE
     db.exec(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +22,7 @@ function initDb() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Migrations for Users (Sa better-sqlite3, gamitin ang try-catch para sa columns na baka existing na)
+    // Migrations for Users
     try { db.exec("ALTER TABLE users ADD COLUMN phone TEXT"); } catch (e) {}
     try { db.exec("ALTER TABLE users ADD COLUMN gcash_number TEXT"); } catch (e) {}
     try { db.exec("ALTER TABLE users ADD COLUMN bank_account TEXT"); } catch (e) {}
@@ -76,7 +74,7 @@ function initDb() {
     // 7. AUTO CREATE ADMIN
     const admin = db.prepare('SELECT id FROM users WHERE email=?').get('admin@lotto.com');
     if (!admin) {
-        const hash = bcrypt.hashSync('admin123', 10); // Sync ang gamit dito para simple
+        const hash = bcrypt.hashSync('admin123', 10);
         db.prepare('INSERT INTO users (name, email, phone, password_hash, is_admin) VALUES (?, ?, ?, ?, 1)')
           .run('Super Admin', 'admin@lotto.com', '00000000000', hash);
     }
@@ -88,6 +86,6 @@ function initDb() {
         db.prepare('INSERT INTO users (name, email, phone, password_hash, is_controller) VALUES (?, ?, ?, ?, 1)')
           .run('Controller', 'controller@lotto.com', '11111111111', hash);
     }
-}git add .
+}
 
 module.exports = { initDb, db };
