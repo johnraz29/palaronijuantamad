@@ -15,7 +15,7 @@ const moment = require('moment-timezone');
 const { v4: uuidv4 } = require('uuid');
 const expressLayouts = require('express-ejs-layouts');
 const axios = require('axios');
-const SQLiteStore = require('connect-sqlite3')(session);
+const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
 const app = express();
 const PORT = process.env.PORT || 3004;
 const AGENT_COMMISSION_RATE = 0.03;
@@ -61,8 +61,17 @@ app.use(
     cookie: { maxAge: 600000 }
   })
 );
-
+const path = require('path');
 app.use(flash()); 
+app.use(session({
+    store: new SQLiteStore({ 
+        db: 'sessions.sqlite', 
+        dir: path.join(__dirname, 'data') // Kung gagamit ka ng Volume
+    }),
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(expressLayouts);
@@ -79,11 +88,13 @@ app.use((req, res, next) => {
     next();
 });
 
+
 // Initialize Database
 initDb();
 
 
 app.use(express.json());
+
 
 // ==========================================
 // 3. PASSPORT AUTHENTICATION STRATEGY

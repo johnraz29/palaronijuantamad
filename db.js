@@ -1,4 +1,10 @@
-const Database = require('better-sqlite3');
+const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'), (err) => {
+    if (err) {
+        console.error("Database opening error: ", err);
+    } else {
+        console.log("Connected to SQLite database.");
+    }
+});
 const path = require('path');
 const bcrypt = require('bcrypt'); // <--- SIGURADUHIN NA NANDITO ITO
 
