@@ -13,6 +13,7 @@
     "better-sqlite3": "^12.9.0",
     "body-parser": "^1.20.2",
     "connect-flash": "^0.1.1",
+    "connect-sqlite3": "^0.9.16",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.6.1",
     "ejs": "^3.1.10",

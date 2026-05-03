@@ -15,7 +15,7 @@ const moment = require('moment-timezone');
 const { v4: uuidv4 } = require('uuid');
 const expressLayouts = require('express-ejs-layouts');
 const axios = require('axios');
-
+const SQLiteStore = require('connect-sqlite3')(session);
 const app = express();
 const PORT = process.env.PORT || 3004;
 const AGENT_COMMISSION_RATE = 0.03;
@@ -45,7 +45,13 @@ app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
+app.use(session({
+  store: new SQLiteStore({ db: 'sessions.db', dir: './data' }), // Siguraduhing may access ang Railway sa folder na ito
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week
+}));
 // Session & Flash Configuration
 app.use(
   session({

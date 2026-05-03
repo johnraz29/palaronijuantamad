@@ -3,12 +3,13 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 
 const dbFile = path.join(__dirname, 'data.sqlite');
-const db = new Database('data.sqlite');
+const db = new Database(dbFile); // Inayos din natin ito para gamitin ang dbFile path
 
 function initDb() {
-  db.serialize(() => {
+    // Alisin ang db.serialize, diretso na ang mga commands
+    
     // 1. USERS TABLE
-    db.run(`CREATE TABLE IF NOT EXISTS users (
+    db.exec(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       email TEXT UNIQUE,
@@ -23,14 +24,14 @@ function initDb() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Migrations for Users
-    db.run("ALTER TABLE users ADD COLUMN phone TEXT", (err) => {});
-    db.run("ALTER TABLE users ADD COLUMN gcash_number TEXT", (err) => {});
-    db.run("ALTER TABLE users ADD COLUMN bank_account TEXT", (err) => {});
-    db.run("ALTER TABLE users ADD COLUMN name_change_count INTEGER DEFAULT 0", (err) => {});
+    // Migrations for Users (Sa better-sqlite3, gamitin ang try-catch para sa columns na baka existing na)
+    try { db.exec("ALTER TABLE users ADD COLUMN phone TEXT"); } catch (e) {}
+    try { db.exec("ALTER TABLE users ADD COLUMN gcash_number TEXT"); } catch (e) {}
+    try { db.exec("ALTER TABLE users ADD COLUMN bank_account TEXT"); } catch (e) {}
+    try { db.exec("ALTER TABLE users ADD COLUMN name_change_count INTEGER DEFAULT 0"); } catch (e) {}
 
-    // 3. BETS TABLE (Inayos para sa iba't ibang games)
-    db.run(`CREATE TABLE IF NOT EXISTS bets (
+    // 3. BETS TABLE
+    db.exec(`CREATE TABLE IF NOT EXISTS bets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER,
       numbers TEXT,
@@ -42,12 +43,11 @@ function initDb() {
       created_at TEXT
     )`);
 
-    // Migrations for Bets (Importante para sa House Ledger)
-    db.run("ALTER TABLE bets ADD COLUMN game_type TEXT", (err) => {});
-    db.run("ALTER TABLE bets ADD COLUMN payout REAL DEFAULT 0", (err) => {});
+    try { db.exec("ALTER TABLE bets ADD COLUMN game_type TEXT"); } catch (e) {}
+    try { db.exec("ALTER TABLE bets ADD COLUMN payout REAL DEFAULT 0"); } catch (e) {}
 
     // 4. TRANSACTIONS
-    db.run(`CREATE TABLE IF NOT EXISTS transactions (
+    db.exec(`CREATE TABLE IF NOT EXISTS transactions (
       id TEXT PRIMARY KEY,
       user_id INTEGER,
       type TEXT,
@@ -58,39 +58,36 @@ function initDb() {
     )`);
 
     // 5. RESULTS
-    db.run(`CREATE TABLE IF NOT EXISTS results (
+    db.exec(`CREATE TABLE IF NOT EXISTS results (
       id TEXT PRIMARY KEY,
       numbers TEXT,
       created_at TEXT
     )`);
 
     // 6. SETTINGS
-    db.run(`CREATE TABLE IF NOT EXISTS settings (
+    db.exec(`CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT
     )`);
 
-    db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('live_stream_url', 'https://www.youtube.com/embed/live_stream_id')");
-    db.run("INSERT OR IGNORE INTO settings (key, value) VALUES ('video_status', 'playing')");
+    db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('live_stream_url', 'https://www.youtube.com/embed/live_stream_id')").run();
+    db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES ('video_status', 'playing')").run();
 
     // 7. AUTO CREATE ADMIN
-    db.get('SELECT id FROM users WHERE email=?', ['admin@lotto.com'], async (err, row) => {
-      if (!row) {
-        const hash = await bcrypt.hash('admin123', 10);
-        db.run('INSERT INTO users (name, email, phone, password_hash, is_admin) VALUES (?, ?, ?, ?, 1)',
-          ['Super Admin', 'admin@lotto.com', '00000000000', hash]);
-      }
-    });
+    const admin = db.prepare('SELECT id FROM users WHERE email=?').get('admin@lotto.com');
+    if (!admin) {
+        const hash = bcrypt.hashSync('admin123', 10); // Sync ang gamit dito para simple
+        db.prepare('INSERT INTO users (name, email, phone, password_hash, is_admin) VALUES (?, ?, ?, ?, 1)')
+          .run('Super Admin', 'admin@lotto.com', '00000000000', hash);
+    }
 
     // 8. AUTO CREATE CONTROLLER
-    db.get('SELECT id FROM users WHERE email=?', ['controller@lotto.com'], async (err, row) => {
-      if (!row) {
-        const hash = await bcrypt.hash('123456', 10);
-        db.run('INSERT INTO users (name, email, phone, password_hash, is_controller) VALUES (?, ?, ?, ?, 1)',
-          ['Controller', 'controller@lotto.com', '11111111111', hash]);
-      }
-    });
-  });
-}
+    const controller = db.prepare('SELECT id FROM users WHERE email=?').get('controller@lotto.com');
+    if (!controller) {
+        const hash = bcrypt.hashSync('123456', 10);
+        db.prepare('INSERT INTO users (name, email, phone, password_hash, is_controller) VALUES (?, ?, ?, ?, 1)')
+          .run('Controller', 'controller@lotto.com', '11111111111', hash);
+    }
+}git add .
 
 module.exports = { initDb, db };
