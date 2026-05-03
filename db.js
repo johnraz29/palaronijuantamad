@@ -1,10 +1,9 @@
 const Database = require('better-sqlite3');
 const path = require('path');
-const bcrypt = require('bcrypt');
 
-const dbFile = path.resolve(process.cwd(), 'data.sqlite');
+// Siguraduhin na sa root directory ng Railway app malalagay ang file
+const dbFile = path.join(process.cwd(), 'data.sqlite');
 const db = new Database(dbFile);
-
 function initDb() {
     // 1. USERS TABLE
     db.exec(`CREATE TABLE IF NOT EXISTS users (
