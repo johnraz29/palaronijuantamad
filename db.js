@@ -1,9 +1,9 @@
-const Database = require('better-sqlite3');
 const path = require('path');
+const Database = require('better-sqlite3');
 const bcrypt = require('bcrypt');
 
 const dbFile = path.resolve(process.cwd(), 'data.sqlite');
-const db = new Database(dbFile, { verbose: console.log });
+const db = new Database(dbFile);
 
 function initDb() {
     // 1. USERS TABLE
