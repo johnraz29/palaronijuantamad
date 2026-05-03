@@ -15,7 +15,9 @@ const moment = require('moment-timezone');
 const { v4: uuidv4 } = require('uuid');
 const expressLayouts = require('express-ejs-layouts');
 const axios = require('axios');
-const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
+// Burahin ang 'const' sa unahan kung may na-declare na sa taas
+global.db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
+const db = global.db;
 const app = express();
 const PORT = process.env.PORT || 3004;
 const AGENT_COMMISSION_RATE = 0.03;
